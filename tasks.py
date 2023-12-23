@@ -10,19 +10,21 @@ import os
 import logging
 import multiprocessing
 from external.analyzer import analyze_json, dump_data
-
+from typing import Optional, Dict, List
 
 logger = setup_logging()
 
 
 class DataFetchingTask:
-    def __init__(self, city_name: str, output_path: str | Path):
-        self.city_name = city_name
-        self.output_path = output_path
-        self.weather_data = None
-        self.thread = threading.Thread(target=self.fetch_and_save_data)
+    def __init__(self, city_name: str, output_path: str | Path) -> None:
+        self.city_name: str = city_name
+        self.output_path: str | Path = output_path
+        self.weather_data: Optional[Dict] = None
+        self.thread: threading.Thread = threading.Thread(
+            target=self.fetch_and_save_data
+        )
 
-    def fetch_and_save_data(self):
+    def fetch_and_save_data(self) -> None:
         try:
             logging.info(f"Начинаем получение данных для города {self.city_name}")
             self.weather_data = YandexWeatherAPI.get_forecasting(CITIES[self.city_name])
@@ -39,21 +41,23 @@ class DataFetchingTask:
                 f"Ошибка при получении данных для города {self.city_name}: {e}"
             )
 
-    def start(self):
+    def start(self) -> None:
         self.thread.start()
 
-    def join(self):
+    def join(self) -> None:
         self.thread.join()
         return self.weather_data
 
 
 class DataCalculationTask:
-    def __init__(self, input_path, output_path):
-        self.input_path = input_path
-        self.output_path = output_path
-        self.process = multiprocessing.Process(target=self.calculate)
+    def __init__(self, input_path: str, output_path: str) -> None:
+        self.input_path: str = input_path
+        self.output_path: str = output_path
+        self.process: multiprocessing.Process = multiprocessing.Process(
+            target=self.calculate
+        )
 
-    def calculate(self):
+    def calculate(self) -> None:
         try:
             logging.info(f"Начинаем анализ данных для файла {self.input_path}")
             with open(self.input_path, "r") as file:
@@ -67,20 +71,20 @@ class DataCalculationTask:
         except Exception as e:
             logging.error(f"Ошибка при анализе данных из файла {self.input_path}: {e}")
 
-    def start(self):
+    def start(self) -> None:
         self.process.start()
 
-    def join(self):
+    def join(self) -> None:
         self.process.join()
 
 
 class DataAggregationTask:
-    def __init__(self, input_folder, output_file):
-        self.input_folder = input_folder
-        self.output_file = output_file
-        self.thread = threading.Thread(target=self.aggregate)
+    def __init__(self, input_folder: str, output_file: str) -> None:
+        self.input_folder: str = input_folder
+        self.output_file: str = output_file
+        self.thread: threading.Thread = threading.Thread(target=self.aggregate)
 
-    def aggregate(self):
+    def aggregate(self) -> None:
         try:
             logging.info("Начинаем агрегацию данных")
             aggregated_data = {}
@@ -99,19 +103,21 @@ class DataAggregationTask:
         except Exception as e:
             logging.error(f"Ошибка при агрегации данных: {e}")
 
-    def start(self):
+    def start(self) -> None:
         self.thread.start()
 
-    def join(self):
+    def join(self) -> None:
         self.thread.join()
 
 
 class DataAnalyzingTask:
-    def __init__(self, input_file):
-        self.input_file = input_file
-        self.process = multiprocessing.Process(target=self.analyze)
+    def __init__(self, input_file: str) -> None:
+        self.input_file: str = input_file
+        self.process: multiprocessing.Process = multiprocessing.Process(
+            target=self.analyze
+        )
 
-    def analyze(self):
+    def analyze(self) -> None:
         try:
             logging.info("Начинаем финальный анализ данных")
             with open(self.input_file, "r") as file:
@@ -139,14 +145,14 @@ class DataAnalyzingTask:
                 if days_count > 0:
                     avg_temp = total_temp / days_count
                     if avg_temp > max_avg_temp or (
-                        avg_temp == max_avg_temp and total_clear_hours > max_clear_hours
+                            avg_temp == max_avg_temp and total_clear_hours > max_clear_hours
                     ):
                         best_cities = [city]
                         max_avg_temp = avg_temp
                         max_clear_hours = total_clear_hours
                     elif (
-                        avg_temp == max_avg_temp
-                        and total_clear_hours == max_clear_hours
+                            avg_temp == max_avg_temp
+                            and total_clear_hours == max_clear_hours
                     ):
                         best_cities.append(city)
 
@@ -156,8 +162,8 @@ class DataAnalyzingTask:
         except Exception as e:
             logging.error(f"Ошибка при анализе данных: {e}")
 
-    def start(self):
+    def start(self) -> None:
         self.process.start()
 
-    def join(self):
+    def join(self) -> None:
         self.process.join()
