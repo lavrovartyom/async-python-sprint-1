@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import requests
+from pydantic import ValidationError
 
 from external.client import YandexWeatherAPI
 from utils import CITIES
@@ -13,6 +14,7 @@ import logging
 import multiprocessing
 from external.analyzer import analyze_json, dump_data
 from typing import Optional, Dict
+from models import WeatherData
 
 logger = setup_logging()
 
@@ -129,25 +131,26 @@ class DataAnalyzingTask:
             logging.info("Starting final data analysis")
             with open(self.input_file, "r") as file:
                 data = json.load(file)
+            try:
+                weather_data = WeatherData(cities=data)
+            except ValidationError as e:
+                logging.error("Validation error during data analysis: %s", e)
+                return
 
             best_cities = []
             max_avg_temp = float("-inf")
             max_clear_hours = 0
 
-            for city, city_data in data.items():
-                if "days" not in city_data:
-                    logging.warning("There are no 'days' data for the city %s", city)
-                    continue
-
+            for city, city_data in weather_data.cities.items():
                 total_temp = 0
                 total_clear_hours = 0
                 days_count = 0
 
-                for day in city_data["days"]:
-                    if day["temp_avg"] is not None:
-                        total_temp += day["temp_avg"]
+                for day in city_data.days:
+                    if day.temp_avg is not None:
+                        total_temp += day.temp_avg
                         days_count += 1
-                    total_clear_hours += day["relevant_cond_hours"]
+                    total_clear_hours += day.relevant_cond_hours
 
                 if days_count > 0:
                     avg_temp = total_temp / days_count
