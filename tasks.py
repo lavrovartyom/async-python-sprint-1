@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import requests
+
 from external.client import YandexWeatherAPI
 from utils import CITIES
 import threading
@@ -34,8 +36,10 @@ class DataFetchingTask:
             with open(self.output_path, "w") as file:
                 json.dump(self.weather_data, file, indent=4)
             logging.info("Data for city %s successfully saved in %s", self.city_name, self.output_path)
-        except Exception as e:
-            logging.error("Error fetching data for city %s: %s", self.city_name, e)
+        except (OSError, IOError) as e:
+            logging.error("Filesystem error for city %s: %s", self.city_name, e)
+        except requests.exceptions.RequestException as e:
+            logging.error("Network error for city %s: %s", self.city_name, e)
 
     def start(self) -> None:
         self.thread.start()
@@ -56,14 +60,21 @@ class DataCalculationTask:
     def calculate(self) -> None:
         try:
             logging.info("Starting data analysis for file %s", self.input_path)
+
             with open(self.input_path, "r") as file:
                 data = json.load(file)
+
             os.makedirs(os.path.dirname(self.output_path), exist_ok=True)
             analyzed_data = analyze_json(data)
             dump_data(analyzed_data, self.output_path)
+
             logging.info("Data successfully analyzed and saved in %s", self.output_path)
+        except (OSError, IOError) as e:
+            logging.error("Filesystem error during processing file %s: %s", self.input_path, e)
+        except json.JSONDecodeError as e:
+            logging.error("JSON decoding error during processing file %s: %s", self.input_path, e)
         except Exception as e:
-            logging.error("Error analyzing data from file %s: %s", self.input_path, e)
+            logging.error("Error during data analysis from file %s: %s", self.input_path, e)
 
     def start(self) -> None:
         self.process.start()
@@ -92,8 +103,12 @@ class DataAggregationTask:
                 json.dump(aggregated_data, file, indent=4)
 
             logging.info("Data successfully aggregated and saved in %s", self.output_file)
+        except (OSError, IOError) as e:
+            logging.error("Filesystem error during aggregation: %s", e)
+        except json.JSONDecodeError as e:
+            logging.error("JSON decoding error during aggregation: %s", e)
         except Exception as e:
-            logging.error("Error aggregating data: %s", e)
+            logging.error("Unexpected error during data aggregation: %s", e)
 
     def start(self) -> None:
         self.thread.start()
@@ -149,8 +164,12 @@ class DataAnalyzingTask:
                         best_cities.append(city)
 
             logging.info("Most favorable cities for travel: %s", ', '.join(best_cities))
+        except (OSError, IOError) as e:
+            logging.error("Filesystem error during analysis: %s", e)
+        except json.JSONDecodeError as e:
+            logging.error("JSON decoding error during analysis: %s", e)
         except Exception as e:
-            logging.error("Error during data analysis: %s", e)
+            logging.error("Unexpected error during data analysis: %s", e)
 
     def start(self) -> None:
         self.process.start()

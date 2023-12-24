@@ -51,21 +51,18 @@ def run_data_analyzing_task() -> None:
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO)
-    try:
-        logging.info("Starting data fetching tasks")
-        run_data_fetching_tasks()
 
-        logging.info("Starting data calculation tasks")
-        run_data_calculation_tasks()
+    logging.info("Starting data fetching tasks")
+    run_data_fetching_tasks()
 
-        logging.info("Starting data aggregation task")
-        run_data_aggregation_task()
+    logging.info("Starting data calculation tasks")
+    run_data_calculation_tasks()
 
-        logging.info("Starting data analyzing task")
-        run_data_analyzing_task()
+    logging.info("Starting data aggregation task")
+    run_data_aggregation_task()
 
-    except Exception as e:
-        logging.error("An error occurred: %s", e)
+    logging.info("Starting data analyzing task")
+    run_data_analyzing_task()
 
 
 if __name__ == "__main__":
