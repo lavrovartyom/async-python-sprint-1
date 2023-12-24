@@ -65,7 +65,7 @@ def main() -> None:
         run_data_analyzing_task()
 
     except Exception as e:
-        logging.error(f"An error occurred: {e}")
+        logging.error("An error occurred: %s", e)
 
 
 if __name__ == "__main__":

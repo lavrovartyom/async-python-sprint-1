@@ -26,16 +26,16 @@ class DataFetchingTask:
 
     def fetch_and_save_data(self) -> None:
         try:
-            logging.info(f"Starting data fetching for city {self.city_name}")
+            logging.info("Starting data fetching for city %s", self.city_name)
             self.weather_data = YandexWeatherAPI.get_forecasting(CITIES[self.city_name])
             if not self.weather_data:
                 return
             os.makedirs(os.path.dirname(self.output_path), exist_ok=True)
             with open(self.output_path, "w") as file:
                 json.dump(self.weather_data, file, indent=4)
-            logging.info(f"Data for city {self.city_name} successfully saved in {self.output_path}")
+            logging.info("Data for city %s successfully saved in %s", self.city_name, self.output_path)
         except Exception as e:
-            logging.error(f"Error fetching data for city {self.city_name}: {e}")
+            logging.error("Error fetching data for city %s: %s", self.city_name, e)
 
     def start(self) -> None:
         self.thread.start()
@@ -55,15 +55,15 @@ class DataCalculationTask:
 
     def calculate(self) -> None:
         try:
-            logging.info(f"Starting data analysis for file {self.input_path}")
+            logging.info("Starting data analysis for file %s", self.input_path)
             with open(self.input_path, "r") as file:
                 data = json.load(file)
             os.makedirs(os.path.dirname(self.output_path), exist_ok=True)
             analyzed_data = analyze_json(data)
             dump_data(analyzed_data, self.output_path)
-            logging.info(f"Data successfully analyzed and saved in {self.output_path}")
+            logging.info("Data successfully analyzed and saved in %s", self.output_path)
         except Exception as e:
-            logging.error(f"Error analyzing data from file {self.input_path}: {e}")
+            logging.error("Error analyzing data from file %s: %s", self.input_path, e)
 
     def start(self) -> None:
         self.process.start()
@@ -91,9 +91,9 @@ class DataAggregationTask:
             with open(self.output_file, "w") as file:
                 json.dump(aggregated_data, file, indent=4)
 
-            logging.info(f"Data successfully aggregated and saved in {self.output_file}")
+            logging.info("Data successfully aggregated and saved in %s", self.output_file)
         except Exception as e:
-            logging.error(f"Error aggregating data: {e}")
+            logging.error("Error aggregating data: %s", e)
 
     def start(self) -> None:
         self.thread.start()
@@ -121,7 +121,7 @@ class DataAnalyzingTask:
 
             for city, city_data in data.items():
                 if "days" not in city_data:
-                    logging.warning(f"There are no “days” data for the city {city}")
+                    logging.warning("There are no 'days' data for the city %s", city)
                     continue
 
                 total_temp = 0
@@ -148,9 +148,9 @@ class DataAnalyzingTask:
                     ):
                         best_cities.append(city)
 
-            logging.info(f"Most favorable cities for travel: {', '.join(best_cities)}")
+            logging.info("Most favorable cities for travel: %s", ', '.join(best_cities))
         except Exception as e:
-            logging.error(f"Error during data analysis: {e}")
+            logging.error("Error during data analysis: %s", e)
 
     def start(self) -> None:
         self.process.start()
