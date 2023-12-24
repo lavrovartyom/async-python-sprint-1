@@ -18,27 +18,12 @@ INPUT_TEMPERATURE_PATH = "temp"
 INPUT_CONDITION_PATH = "condition"
 INPUT_DAY_HOURS_START = 9
 INPUT_DAY_HOURS_END = 19
-INPUT_DAY_SUITABLE_CONDITIONS = [
+INPUT_DAY_SUITABLE_CONDITIONS = (
     "clear",
     "partly-cloudy",
     "cloudy",
     "overcast",
-    # "drizzle",
-    # "light-rain",
-    # "rain",
-    # "moderate-rain",
-    # "heavy-rain",
-    # "continuous-heavy-rain",
-    # "showers",
-    # "wet-snow",
-    # "light-snow",
-    # "snow",
-    # "snow-showers",
-    # "hail",
-    # "thunderstorm",
-    # "thunderstorm-with-rain",
-    # "thunderstorm-with-hail"
-]
+)
 
 OUTPUT_RAW_DATA_KEY = "raw_data"
 OUTPUT_DAYS_KEY = "days"

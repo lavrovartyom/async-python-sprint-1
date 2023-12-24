@@ -10,7 +10,7 @@ import os
 import logging
 import multiprocessing
 from external.analyzer import analyze_json, dump_data
-from typing import Optional, Dict, List
+from typing import Optional, Dict
 
 logger = setup_logging()
 
@@ -26,20 +26,16 @@ class DataFetchingTask:
 
     def fetch_and_save_data(self) -> None:
         try:
-            logging.info(f"Начинаем получение данных для города {self.city_name}")
+            logging.info(f"Starting data fetching for city {self.city_name}")
             self.weather_data = YandexWeatherAPI.get_forecasting(CITIES[self.city_name])
             if not self.weather_data:
                 return
             os.makedirs(os.path.dirname(self.output_path), exist_ok=True)
             with open(self.output_path, "w") as file:
                 json.dump(self.weather_data, file, indent=4)
-            logging.info(
-                f"Данные для города {self.city_name} успешно сохранены в {self.output_path}"
-            )
+            logging.info(f"Data for city {self.city_name} successfully saved in {self.output_path}")
         except Exception as e:
-            logging.error(
-                f"Ошибка при получении данных для города {self.city_name}: {e}"
-            )
+            logging.error(f"Error fetching data for city {self.city_name}: {e}")
 
     def start(self) -> None:
         self.thread.start()
@@ -59,17 +55,15 @@ class DataCalculationTask:
 
     def calculate(self) -> None:
         try:
-            logging.info(f"Начинаем анализ данных для файла {self.input_path}")
+            logging.info(f"Starting data analysis for file {self.input_path}")
             with open(self.input_path, "r") as file:
                 data = json.load(file)
             os.makedirs(os.path.dirname(self.output_path), exist_ok=True)
             analyzed_data = analyze_json(data)
             dump_data(analyzed_data, self.output_path)
-            logging.info(
-                f"Данные успешно проанализированы и сохранены в {self.output_path}"
-            )
+            logging.info(f"Data successfully analyzed and saved in {self.output_path}")
         except Exception as e:
-            logging.error(f"Ошибка при анализе данных из файла {self.input_path}: {e}")
+            logging.error(f"Error analyzing data from file {self.input_path}: {e}")
 
     def start(self) -> None:
         self.process.start()
@@ -86,7 +80,7 @@ class DataAggregationTask:
 
     def aggregate(self) -> None:
         try:
-            logging.info("Начинаем агрегацию данных")
+            logging.info("Starting data aggregation")
             aggregated_data = {}
             for file_name in glob.glob(f"{self.input_folder}/*_analysis.json"):
                 city_name = os.path.basename(file_name).split("_")[0]
@@ -97,11 +91,9 @@ class DataAggregationTask:
             with open(self.output_file, "w") as file:
                 json.dump(aggregated_data, file, indent=4)
 
-            logging.info(
-                f"Данные успешно агрегированы и сохранены в {self.output_file}"
-            )
+            logging.info(f"Data successfully aggregated and saved in {self.output_file}")
         except Exception as e:
-            logging.error(f"Ошибка при агрегации данных: {e}")
+            logging.error(f"Error aggregating data: {e}")
 
     def start(self) -> None:
         self.thread.start()
@@ -119,7 +111,7 @@ class DataAnalyzingTask:
 
     def analyze(self) -> None:
         try:
-            logging.info("Начинаем финальный анализ данных")
+            logging.info("Starting final data analysis")
             with open(self.input_file, "r") as file:
                 data = json.load(file)
 
@@ -129,7 +121,7 @@ class DataAnalyzingTask:
 
             for city, city_data in data.items():
                 if "days" not in city_data:
-                    logging.warning(f"Отсутствуют данные 'days' для города {city}")
+                    logging.warning(f"There are no “days” data for the city {city}")
                     continue
 
                 total_temp = 0
@@ -156,11 +148,9 @@ class DataAnalyzingTask:
                     ):
                         best_cities.append(city)
 
-            logging.info(
-                f"Наиболее благоприятные города для поездки: {', '.join(best_cities)}"
-            )
+            logging.info(f"Most favorable cities for travel: {', '.join(best_cities)}")
         except Exception as e:
-            logging.error(f"Ошибка при анализе данных: {e}")
+            logging.error(f"Error during data analysis: {e}")
 
     def start(self) -> None:
         self.process.start()
