@@ -1,20 +1,20 @@
+import glob
+import json
+import logging
+import multiprocessing
+import os
+import threading
 from pathlib import Path
+from typing import Dict, Optional
 
 import requests
 from pydantic import ValidationError
 
-from external.client import YandexWeatherAPI
-from utils import CITIES
-import threading
-from logger_config import setup_logging
-import glob
-import json
-import os
-import logging
-import multiprocessing
 from external.analyzer import analyze_json, dump_data
-from typing import Optional, Dict
+from external.client import YandexWeatherAPI
+from logger_config import setup_logging
 from models import WeatherData
+from utils import CITIES
 
 logger = setup_logging()
 
@@ -37,7 +37,11 @@ class DataFetchingTask:
             os.makedirs(os.path.dirname(self.output_path), exist_ok=True)
             with open(self.output_path, "w") as file:
                 json.dump(self.weather_data, file, indent=4)
-            logging.info("Data for city %s successfully saved in %s", self.city_name, self.output_path)
+            logging.info(
+                "Data for city %s successfully saved in %s",
+                self.city_name,
+                self.output_path,
+            )
         except (OSError, IOError) as e:
             logging.error("Filesystem error for city %s: %s", self.city_name, e)
         except requests.exceptions.RequestException as e:
@@ -72,11 +76,17 @@ class DataCalculationTask:
 
             logging.info("Data successfully analyzed and saved in %s", self.output_path)
         except (OSError, IOError) as e:
-            logging.error("Filesystem error during processing file %s: %s", self.input_path, e)
+            logging.error(
+                "Filesystem error during processing file %s: %s", self.input_path, e
+            )
         except json.JSONDecodeError as e:
-            logging.error("JSON decoding error during processing file %s: %s", self.input_path, e)
+            logging.error(
+                "JSON decoding error during processing file %s: %s", self.input_path, e
+            )
         except Exception as e:
-            logging.error("Error during data analysis from file %s: %s", self.input_path, e)
+            logging.error(
+                "Error during data analysis from file %s: %s", self.input_path, e
+            )
 
     def start(self) -> None:
         self.process.start()
@@ -104,7 +114,9 @@ class DataAggregationTask:
             with open(self.output_file, "w") as file:
                 json.dump(aggregated_data, file, indent=4)
 
-            logging.info("Data successfully aggregated and saved in %s", self.output_file)
+            logging.info(
+                "Data successfully aggregated and saved in %s", self.output_file
+            )
         except (OSError, IOError) as e:
             logging.error("Filesystem error during aggregation: %s", e)
         except json.JSONDecodeError as e:
@@ -155,18 +167,18 @@ class DataAnalyzingTask:
                 if days_count > 0:
                     avg_temp = total_temp / days_count
                     if avg_temp > max_avg_temp or (
-                            avg_temp == max_avg_temp and total_clear_hours > max_clear_hours
+                        avg_temp == max_avg_temp and total_clear_hours > max_clear_hours
                     ):
                         best_cities = [city]
                         max_avg_temp = avg_temp
                         max_clear_hours = total_clear_hours
                     elif (
-                            avg_temp == max_avg_temp
-                            and total_clear_hours == max_clear_hours
+                        avg_temp == max_avg_temp
+                        and total_clear_hours == max_clear_hours
                     ):
                         best_cities.append(city)
 
-            logging.info("Most favorable cities for travel: %s", ', '.join(best_cities))
+            logging.info("Most favorable cities for travel: %s", ", ".join(best_cities))
         except (OSError, IOError) as e:
             logging.error("Filesystem error during analysis: %s", e)
         except json.JSONDecodeError as e:

@@ -1,13 +1,14 @@
-from tasks import (
-    DataFetchingTask,
-    DataCalculationTask,
-    DataAggregationTask,
-    DataAnalyzingTask,
-)
-from utils import CITIES
 import glob
 import logging
 from typing import List
+
+from tasks import (
+    DataAggregationTask,
+    DataAnalyzingTask,
+    DataCalculationTask,
+    DataFetchingTask,
+)
+from utils import CITIES
 
 
 def run_data_fetching_tasks() -> None:
